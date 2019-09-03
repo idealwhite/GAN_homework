@@ -50,15 +50,30 @@ def eval_G(generator, batch_size, dim_noise, device, grid=False):
         output_images = make_grid(output_images)
     return output_images
 
-
 if __name__ == '__main__':
     from tensorboardX import SummaryWriter
+    import argparse
 
-    max_epoch = 10
-    n_update_d = 10
-    n_update_g = 10
-    batch_size = 3
-    dim_noise = 100
+    parser = argparse.ArgumentParser()
+
+    ## Required parameters
+    parser.add_argument("--batch_size", default=5, type=int, required=False,
+                        help="The input data dir.")
+    parser.add_argument("--max_epoch", default=100, type=int, required=False,
+                        help="Training epoch of D-G recurrence.")
+    parser.add_argument("--n_update_d", default=1000, type=int, required=False,
+                        help="num of batch when update D in an epoch.")
+    parser.add_argument("--n_update_g", default=200, type=int, required=False,
+                        help="num of batch when update G in an epoch.")
+    parser.add_argument("--dim_noise", default=100, type=int, required=False)
+    args = parser.parse_args()
+
+    max_epoch = args.max_epoch
+    n_update_d = args.n_update_d
+    n_update_g = args.n_update_g
+    batch_size = args.batch_size
+    dim_noise = args.dim_noise
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     D = Discriminator()
     G = Generator()
