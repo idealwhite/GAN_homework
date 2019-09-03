@@ -61,9 +61,9 @@ if __name__ == '__main__':
                         help="The input data dir.")
     parser.add_argument("--max_epoch", default=100, type=int, required=False,
                         help="Training epoch of D-G recurrence.")
-    parser.add_argument("--n_update_d", default=1000, type=int, required=False,
+    parser.add_argument("--n_update_d", default=500, type=int, required=False,
                         help="num of batch when update D in an epoch.")
-    parser.add_argument("--n_update_g", default=200, type=int, required=False,
+    parser.add_argument("--n_update_g", default=100, type=int, required=False,
                         help="num of batch when update G in an epoch.")
     parser.add_argument("--dim_noise", default=100, type=int, required=False)
     args = parser.parse_args()
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     G.to(device)
 
     # train
-    optimizer_D = Adam(D.parameters(), lr=1e-4)
+    optimizer_D = RMSprop(D.parameters(), lr=1e-4)
     optimizer_G = RMSprop(G.parameters(), lr=1e-4)
     train_data = face_folder
     writer = SummaryWriter(logdir='./log/')
@@ -96,7 +96,7 @@ if __name__ == '__main__':
             loss_g = update_generator(G, D, optimizer_G, batch_size, dim_noise, device)
             loss_epoch_g += loss_g / n_update_g
 
-        print('Loss: D-%.5f, G-%.5f' % (loss_epoch_d, loss_epoch_g))
+        print('Loss- D: %.5f, G: %.5f' % (loss_epoch_d, loss_epoch_g))
         writer.add_scalar('loss_D', loss_d, global_step=epoch)
         writer.add_scalar('loss_G', loss_g, global_step=epoch)
 
