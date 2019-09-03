@@ -103,12 +103,11 @@ if __name__ == '__main__':
             loss_g = update_generator(G, D, optimizer_G, batch_size, dim_noise, device)
             loss_epoch_g += loss_g / n_update_g
 
-        print('Loss- D: %.5f, G: %.5f' % (loss_epoch_d, loss_epoch_g))
-        writer.add_scalar('loss_D', loss_d, global_step=epoch)
-        writer.add_scalar('loss_G', loss_g, global_step=epoch)
-
         # evaluation
         if epoch % n_eval_epoch == 0:
+            print('Epoch: %d => Loss D: %.5f, G: %.5f' % (epoch, loss_epoch_d, loss_epoch_g))
+            writer.add_scalar('loss_D', loss_d, global_step=epoch)
+            writer.add_scalar('loss_G', loss_g, global_step=epoch)
             generate_img = eval_G(G, batch_size=9, dim_noise=100, device=device, grid=True)
             writer.add_image('fake_image', generate_img, global_step=epoch)
 
