@@ -70,7 +70,7 @@ if __name__ == '__main__':
     optimizer_D = Adam(D.parameters(), lr=1e-4)
     optimizer_G = RMSprop(G.parameters(), lr=1e-4)
     train_data = face_folder
-    writer = SummaryWriter(log_dir='./log/')
+    writer = SummaryWriter(logdir='./log/')
 
     for epoch in range(max_epoch):
         loss_epoch_d, loss_epoch_g = 0,0
