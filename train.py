@@ -16,9 +16,11 @@ def update_discriminator(train_data, generator, discriminator, optimizer, batch_
     loss = discriminator(batch_image, batch_fake)
 
     loss.backward()
-    torch.nn.utils.clip_grad_value_(discriminator.parameters(), 0.01)
-
     optimizer.step()
+
+    for p in discriminator.parameters():
+        p.data.clamp_(-0.01, 0.01)
+
     return loss.item()
 
 
