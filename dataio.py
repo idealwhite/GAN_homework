@@ -15,8 +15,7 @@ def get_noise_batch(batch_size, dim_noise, device):
 
 def get_fake_batch(generator, batch_size, dim_noise, device):
     noise_batch = get_noise_batch(batch_size, dim_noise, device)
-    with torch.no_grad():
-        batch_fake = generator(noise_batch).to(device)
+    batch_fake = generator(noise_batch).to(device)
     return batch_fake
 
 def get_image_batch(dataset, batch_size, device):
