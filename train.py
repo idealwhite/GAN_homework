@@ -40,13 +40,13 @@ def update_generator(generator, discriminator, optimizer, batch_size, dim_noise,
 
     return loss.item()
 
-def eval_G(generator, batch_size, dim_noise, device, make_grid=False):
+def eval_G(generator, batch_size, dim_noise, device, grid=False):
     generator.eval()
     with torch.no_grad():
         noise = get_noise_batch(batch_size, dim_noise, device)
         output_images = generator(noise)
 
-    if make_grid == True:
+    if grid == True:
         output_images = make_grid(output_images)
     return output_images
 
