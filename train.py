@@ -86,7 +86,7 @@ if __name__ == '__main__':
         writer.add_scalar('loss_G', loss_g, global_step=epoch)
 
         # evaluation
-        generate_img = eval_G(G, batch_size=9, dim_noise=100, device=device, make_grid=True)
+        generate_img = eval_G(G, batch_size=9, dim_noise=100, device=device, grid=True)
         writer.add_image('fake_image', generate_img, global_step=epoch)
 
     # test
