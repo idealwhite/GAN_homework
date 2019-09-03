@@ -26,7 +26,7 @@ class Discriminator(nn.Module):
         logit_image = self.forward_froze(batch_image)
         logit_fake = self.forward_froze(batch_fake)
 
-        return  torch.mean(logit_image - logit_fake)
+        return  -torch.mean(logit_image - logit_fake)
 
     def forward(self, image, fake_image=None):
         if fake_image is None:

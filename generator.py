@@ -22,4 +22,4 @@ class Generator(nn.Module):
         return fake_image
 
 def generator_loss(predicted_fake_label):
-    return torch.mean(predicted_fake_label)
+    return -torch.mean(predicted_fake_label)
