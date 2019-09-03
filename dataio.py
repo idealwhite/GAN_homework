@@ -1,5 +1,7 @@
 from torchvision.datasets import ImageFolder
 from torchvision import transforms
+from torchvision.utils import save_image
+from torchvision.utils import make_grid
 
 import numpy as np
 import torch
