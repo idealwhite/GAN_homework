@@ -68,6 +68,10 @@ if __name__ == '__main__':
     parser.add_argument("--n_update_g", default=10, type=int, required=False,
                         help="num of batch when update G in an epoch.")
     parser.add_argument("--dim_noise", default=100, type=int, required=False)
+    parser.add_argument("--n_eval_epoch", default=100, type=int, required=False,
+                        help="epochs per eval")
+    parser.add_argument("--model_name", default='gan', type=str, required=False,
+                        help="name of this model")
     args = parser.parse_args()
 
     max_epoch = args.max_epoch
@@ -75,6 +79,7 @@ if __name__ == '__main__':
     n_update_g = args.n_update_g
     batch_size = args.batch_size
     dim_noise = args.dim_noise
+    n_eval_epoch = args.n_eval_epoch
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     D = Discriminator()
@@ -87,7 +92,7 @@ if __name__ == '__main__':
     optimizer_D = RMSprop(D.parameters(), lr=1e-4)
     optimizer_G = RMSprop(G.parameters(), lr=1e-4)
     train_data = face_folder
-    writer = SummaryWriter(logdir='./log/')
+    writer = SummaryWriter(logdir='./log/'+args.model_name)
 
     for epoch in range(max_epoch):
         loss_epoch_d, loss_epoch_g = 0,0
@@ -103,8 +108,9 @@ if __name__ == '__main__':
         writer.add_scalar('loss_G', loss_g, global_step=epoch)
 
         # evaluation
-        generate_img = eval_G(G, batch_size=9, dim_noise=100, device=device, grid=True)
-        writer.add_image('fake_image', generate_img, global_step=epoch)
+        if epoch % n_eval_epoch == 0:
+            generate_img = eval_G(G, batch_size=9, dim_noise=100, device=device, grid=True)
+            writer.add_image('fake_image', generate_img, global_step=epoch)
 
     # test
     noise = get_noise_batch(9, 100, device)
