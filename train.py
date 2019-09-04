@@ -51,7 +51,7 @@ def eval_G(generator, batch_size, dim_noise, device, grid=False):
         output_images = generator(noise)
 
     if grid == True:
-        output_images = make_grid(output_images*1+1, nrow=4)
+        output_images = make_grid(output_images*0.5+0.5, nrow=4)
     return output_images
 
 if __name__ == '__main__':
