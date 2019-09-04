@@ -95,7 +95,7 @@ if __name__ == '__main__':
     optimizer_D = RMSprop(D.parameters(), lr=1e-4)
     optimizer_G = RMSprop(G.parameters(), lr=1e-4)
 
-    face_dataset = TensorDataset(torch.stack([f[0] for f in face_folder], dim=0)).to(device)
+    face_dataset = TensorDataset(torch.stack([f[0] for f in face_folder], dim=0).to(device))
     dataloader = DataLoader(face_dataset, batch_size=batch_size, shuffle=True)
     writer = SummaryWriter(logdir='./log/'+args.model_name)
 
