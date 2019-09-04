@@ -9,7 +9,7 @@ import torch
 
 face_folder = ImageFolder('./AnimeDataset', transform=transforms.Compose([transforms.Resize([64,64]),
                                                                           transforms.ToTensor(),
-                                                                          transforms.Normalize([0]*3, [1]*3)]))
+                                                                          transforms.Normalize([0.5]*3, [0.5]*3)]))
 
 def get_noise_batch(batch_size, dim_noise, device):
     noise_batch = torch.normal(0, 1, [batch_size, dim_noise]).to(device)
