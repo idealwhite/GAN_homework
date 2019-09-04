@@ -55,7 +55,7 @@ def eval_G(generator, batch_size, dim_noise, device, grid=False):
     return output_images
 
 if __name__ == '__main__':
-    from tqdm import tqdm
+    from tqdm import tqdm, trange
     import argparse
 
     parser = argparse.ArgumentParser()
@@ -100,9 +100,9 @@ if __name__ == '__main__':
     from tensorboardX import SummaryWriter
     writer = SummaryWriter(logdir='./log/'+args.model_name)
 
-    for epoch in range(max_epoch):
+    for epoch in trange(max_epoch):
         loss_epoch_d, loss_epoch_g = 0,0
-        for i, batch_image in tqdm(enumerate(dataloader), total=len(dataloader)):
+        for i, batch_image in enumerate(dataloader):
             if i % n_update_d == 0:
                 loss_d = update_discriminator(batch_image[0], G, D, optimizer_D, batch_size, dim_noise, device)
                 loss_epoch_d += loss_d / n_update_d
