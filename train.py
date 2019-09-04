@@ -1,15 +1,15 @@
 from dataio import *
 from discriminator import Discriminator
 from generator import Generator, generator_loss
+from torch.utils.data import DataLoader
 
 import torch
 from torch.optim import Adam, RMSprop
 
 
-def update_discriminator(train_data, generator, discriminator, optimizer, batch_size, dim_noise, device):
+def update_discriminator(batch_image, generator, discriminator, optimizer, batch_size, dim_noise, device):
     discriminator.train()
 
-    batch_image = get_image_batch(train_data, batch_size, device)
     batch_fake = get_fake_batch(generator, batch_size, dim_noise, device)
 
     discriminator.zero_grad()
@@ -51,11 +51,12 @@ def eval_G(generator, batch_size, dim_noise, device, grid=False):
         output_images = generator(noise)
 
     if grid == True:
-        output_images = make_grid(output_images+1, nrow=3)
+        output_images = make_grid(output_images+1, nrow=4)
     return output_images
 
 if __name__ == '__main__':
     from tensorboardX import SummaryWriter
+    from tqdm import tqdm
     import argparse
 
     parser = argparse.ArgumentParser()
@@ -93,24 +94,27 @@ if __name__ == '__main__':
     # train
     optimizer_D = RMSprop(D.parameters(), lr=1e-4)
     optimizer_G = RMSprop(G.parameters(), lr=1e-4)
-    train_data = face_folder
+
+    face_dataset = TensorDataset(torch.stack([f[0] for f in face_folder], dim=0)).to(device)
+    dataloader = DataLoader(face_dataset, batch_size=batch_size, shuffle=True)
     writer = SummaryWriter(logdir='./log/'+args.model_name)
 
     for epoch in range(max_epoch):
         loss_epoch_d, loss_epoch_g = 0,0
-        for n in range(n_update_d):
-            loss_d = update_discriminator(train_data, G, D, optimizer_D, batch_size, dim_noise, device)
-            loss_epoch_d += loss_d / n_update_d
-        for n in range(n_update_g):
-            loss_g = update_generator(G, D, optimizer_G, batch_size, dim_noise, device)
-            loss_epoch_g += loss_g / n_update_g
+        for batch_image in tqdm(dataloader):
+            for n in range(n_update_d):
+                loss_d = update_discriminator(batch_image, G, D, optimizer_D, batch_size, dim_noise, device)
+                loss_epoch_d += loss_d / n_update_d
+            for n in range(n_update_g):
+                loss_g = update_generator(G, D, optimizer_G, batch_size, dim_noise, device)
+                loss_epoch_g += loss_g / n_update_g
 
         # evaluation
         if epoch % n_eval_epoch == 0:
             print('Epoch: %d => Loss D: %.5f, G: %.5f' % (epoch, loss_epoch_d, loss_epoch_g))
             writer.add_scalar('loss_D', loss_d, global_step=epoch)
             writer.add_scalar('loss_G', loss_g, global_step=epoch)
-            generate_img = eval_G(G, batch_size=9, dim_noise=100, device=device, grid=True)
+            generate_img = eval_G(G, batch_size=16, dim_noise=100, device=device, grid=True)
             writer.add_image('fake_image', generate_img, global_step=epoch)
 
     # test
