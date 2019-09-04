@@ -1,6 +1,8 @@
 ./AnimeDataset
+./AnimeDataset/*
+./__*
 ./.*
-./output
-./checkpoint
-./log
+./output/*
+./checkpoint/*
+./log/*
 

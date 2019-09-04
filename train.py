@@ -65,9 +65,9 @@ if __name__ == '__main__':
                         help="The input data dir.")
     parser.add_argument("--max_epoch", default=10, type=int, required=False,
                         help="Training epoch of D-G recurrence.")
-    parser.add_argument("--n_update_d", default=50, type=int, required=False,
+    parser.add_argument("--n_update_d", default=1, type=int, required=False,
                         help="num of batch when update D in an epoch.")
-    parser.add_argument("--n_update_g", default=10, type=int, required=False,
+    parser.add_argument("--n_update_g", default=5, type=int, required=False,
                         help="num of batch when update G in an epoch.")
     parser.add_argument("--dim_noise", default=100, type=int, required=False)
     parser.add_argument("--n_eval_epoch", default=100, type=int, required=False,
@@ -102,11 +102,12 @@ if __name__ == '__main__':
 
     for epoch in range(max_epoch):
         loss_epoch_d, loss_epoch_g = 0,0
-        for batch_image in tqdm(dataloader):
-            for n in range(n_update_d):
+        for i, batch_image in tqdm(enumerate(dataloader)):
+            if i % n_update_d == 0:
                 loss_d = update_discriminator(batch_image[0], G, D, optimizer_D, batch_size, dim_noise, device)
                 loss_epoch_d += loss_d / n_update_d
-            for n in range(n_update_g):
+
+            if i % n_update_g == 0:
                 loss_g = update_generator(G, D, optimizer_G, batch_size, dim_noise, device)
                 loss_epoch_g += loss_g / n_update_g
 
