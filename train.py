@@ -55,7 +55,6 @@ def eval_G(generator, batch_size, dim_noise, device, grid=False):
     return output_images
 
 if __name__ == '__main__':
-    from tensorboardX import SummaryWriter
     from tqdm import tqdm
     import argparse
 
@@ -97,13 +96,15 @@ if __name__ == '__main__':
 
     face_dataset = TensorDataset(torch.stack([f[0] for f in face_folder], dim=0).to(device))
     dataloader = DataLoader(face_dataset, batch_size=batch_size, shuffle=True)
+
+    from tensorboardX import SummaryWriter
     writer = SummaryWriter(logdir='./log/'+args.model_name)
 
     for epoch in range(max_epoch):
         loss_epoch_d, loss_epoch_g = 0,0
         for batch_image in tqdm(dataloader):
             for n in range(n_update_d):
-                loss_d = update_discriminator(batch_image, G, D, optimizer_D, batch_size, dim_noise, device)
+                loss_d = update_discriminator(batch_image[0], G, D, optimizer_D, batch_size, dim_noise, device)
                 loss_epoch_d += loss_d / n_update_d
             for n in range(n_update_g):
                 loss_g = update_generator(G, D, optimizer_G, batch_size, dim_noise, device)
