@@ -1,7 +1,7 @@
 ./AnimeDataset
 ./AnimeDataset/*
 ./__*
-./.*
+./.idea/
 ./output/*
 ./checkpoint/*
 ./log/*

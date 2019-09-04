@@ -61,13 +61,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     ## Required parameters
-    parser.add_argument("--batch_size", default=5, type=int, required=False,
+    parser.add_argument("--batch_size", default=2, type=int, required=False,
                         help="The input data dir.")
     parser.add_argument("--max_epoch", default=10, type=int, required=False,
                         help="Training epoch of D-G recurrence.")
     parser.add_argument("--n_update_d", default=1, type=int, required=False,
                         help="num of batch when update D in an epoch.")
-    parser.add_argument("--n_update_g", default=5, type=int, required=False,
+    parser.add_argument("--n_update_g", default=1, type=int, required=False,
                         help="num of batch when update G in an epoch.")
     parser.add_argument("--dim_noise", default=100, type=int, required=False)
     parser.add_argument("--n_eval_epoch", default=100, type=int, required=False,

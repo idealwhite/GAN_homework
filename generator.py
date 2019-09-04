@@ -5,21 +5,28 @@ class Generator(nn.Module):
     def __init__(self):
         super(Generator, self).__init__()
 
-        self.transform = nn.Sequential(nn.Linear(100, 128*16*16),
-                                nn.ReLU())
-        self.generate = nn.Sequential(nn.ConvTranspose2d(128, 128, kernel_size=4, stride=2, padding=1),
+        self.generate = nn.Sequential(nn.ConvTranspose2d(100, 256, kernel_size=4, stride=1, padding=0),
+                                      nn.BatchNorm2d(256),
+                                      nn.ReLU(), # 4x4
+
+                                      nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1),
                                       nn.BatchNorm2d(128),
-                                      nn.LeakyReLU(),
+                                      nn.ReLU(), # 8x8
+
                                       nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1),
                                       nn.BatchNorm2d(64),
-                                      nn.LeakyReLU(),
-                                      nn.ConvTranspose2d(64, 3, kernel_size=4, stride=1, padding=1),
-                                      nn.Tanh()
+                                      nn.ReLU(), # 16x16
+
+                                      nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1),
+                                      nn.BatchNorm2d(32),
+                                      nn.ReLU(),  # 32x32
+
+                                      nn.ConvTranspose2d(32, 3, kernel_size=4, stride=2, padding=1),
+                                      nn.Tanh() # 64x64
                                       )
 
     def forward(self, noise):
-        noise = self.transform(noise)
-        noise = noise.view(-1, 128, 16, 16)
+        noise = noise.view(-1, 100, 1, 1)
         fake_image = self.generate(noise)
         return fake_image
 

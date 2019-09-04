@@ -7,7 +7,7 @@ from torch.utils.data import TensorDataset
 import numpy as np
 import torch
 
-face_folder = ImageFolder('./AnimeDataset', transform=transforms.Compose([transforms.Resize([65,65]),
+face_folder = ImageFolder('./AnimeDataset', transform=transforms.Compose([transforms.Resize([64,64]),
                                                                           transforms.ToTensor(),
                                                                           transforms.Normalize([0.5]*3, [0.5]*3)]))
 
