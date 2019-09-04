@@ -51,7 +51,7 @@ def eval_G(generator, batch_size, dim_noise, device, grid=False):
         output_images = generator(noise)
 
     if grid == True:
-        output_images = make_grid(output_images+1, nrow=4)
+        output_images = make_grid(output_images*0.5+0.5, nrow=4)
     return output_images
 
 if __name__ == '__main__':
@@ -102,7 +102,7 @@ if __name__ == '__main__':
 
     for epoch in range(max_epoch):
         loss_epoch_d, loss_epoch_g = 0,0
-        for i, batch_image in tqdm(enumerate(dataloader)):
+        for i, batch_image in tqdm(enumerate(dataloader), total=len(dataloader)):
             if i % n_update_d == 0:
                 loss_d = update_discriminator(batch_image[0], G, D, optimizer_D, batch_size, dim_noise, device)
                 loss_epoch_d += loss_d / n_update_d
