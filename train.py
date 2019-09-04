@@ -51,7 +51,7 @@ def eval_G(generator, batch_size, dim_noise, device, grid=False):
         output_images = generator(noise)
 
     if grid == True:
-        output_images = make_grid(output_images*0.5+0.5, nrow=4)
+        output_images = make_grid(output_images*1+1, nrow=4)
     return output_images
 
 if __name__ == '__main__':
@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
         # evaluation
         if epoch % n_eval_epoch == 0:
-            print('Epoch: %d => Loss D: %.5f, G: %.5f' % (epoch, loss_epoch_d, loss_epoch_g))
+            # print('Epoch: %d => Loss D: %.5f, G: %.5f' % (epoch, loss_epoch_d, loss_epoch_g))
             writer.add_scalar('loss_D', loss_d, global_step=epoch)
             writer.add_scalar('loss_G', loss_g, global_step=epoch)
             generate_img = eval_G(G, batch_size=16, dim_noise=100, device=device, grid=True)
