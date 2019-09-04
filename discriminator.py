@@ -6,19 +6,19 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
 
         self.conv = nn.Sequential(nn.Conv2d(3, 32, kernel_size=4, stride=2, padding=1),
-                                  nn.BatchNorm2d(32),
+                                  # nn.BatchNorm2d(32),
                                   nn.LeakyReLU(),
 
                                   nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1),
-                                  nn.BatchNorm2d(64),
+                                  # nn.BatchNorm2d(64),
                                   nn.LeakyReLU(),
 
                                   nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
-                                  nn.BatchNorm2d(128),
+                                  # nn.BatchNorm2d(128),
                                   nn.LeakyReLU(),
 
                                   nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
-                                  nn.BatchNorm2d(256),
+                                  # nn.BatchNorm2d(256),
                                   nn.LeakyReLU(),
 
                                   nn.Conv2d(256, 1, kernel_size=4, stride=1)
