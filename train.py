@@ -13,15 +13,17 @@ def update_discriminator(train_data, generator, discriminator, optimizer, batch_
     batch_fake = get_fake_batch(generator, batch_size, dim_noise, device)
 
     discriminator.zero_grad()
-    loss = discriminator(batch_image, batch_fake)
+    loss_img = discriminator(batch_image, fake_image=False)
+    loss_img.backward()
+    loss_fake = discriminator(batch_fake, fake_image=True)
+    loss_fake.backward()
 
-    loss.backward()
     optimizer.step()
 
     for p in discriminator.parameters():
         p.data.clamp_(-0.01, 0.01)
 
-    return loss.item()
+    return loss_img.item() + loss_fake.item()
 
 
 def update_generator(generator, discriminator, optimizer, batch_size, dim_noise, device):
