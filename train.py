@@ -97,8 +97,8 @@ if __name__ == '__main__':
     face_dataset = TensorDataset(torch.stack([f[0] for f in face_folder], dim=0).to(device))
     dataloader = DataLoader(face_dataset, batch_size=batch_size, shuffle=True)
 
-    # from tensorboardX import SummaryWriter
-    # writer = SummaryWriter(logdir='./log/'+args.model_name)
+    from tensorboardX import SummaryWriter
+    writer = SummaryWriter(logdir='./log/'+args.model_name)
 
     for epoch in trange(max_epoch):
         loss_epoch_d, loss_epoch_g = 0,0
