@@ -87,7 +87,7 @@ if __name__ == '__main__':
                         help="epochs per eval")
     parser.add_argument("--model_name", default='gan', type=str, required=False,
                         help="name of this model")
-    parser.add_argument("--tb", default=True, type=bool, required=False,
+    parser.add_argument("--tb", default=False, type=bool, required=False,
                         help="use tensorboard")
     parser.add_argument("--lr", default=1e-4, type=float, required=False)
     args = parser.parse_args()
