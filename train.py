@@ -48,6 +48,8 @@ def update_generator(generator, discriminator, optimizer, batch_size, dim_noise,
 
     loss = generator_loss(predicted_fake_label)
     loss.backward()
+    discriminator.zero_grad()
+
     optimizer.step()
 
     return loss.item()
@@ -82,6 +84,7 @@ if __name__ == '__main__':
                         help="epochs per eval")
     parser.add_argument("--model_name", default='gan', type=str, required=False,
                         help="name of this model")
+    parser.add_argument("--lr", default=1e-4, type=float, required=False)
     args = parser.parse_args()
 
     max_epoch = args.max_epoch
@@ -102,8 +105,8 @@ if __name__ == '__main__':
     G.to(device)
 
     # train
-    optimizer_D = RMSprop(D.parameters(), lr=1e-4)
-    optimizer_G = RMSprop(G.parameters(), lr=1e-4)
+    optimizer_D = RMSprop(D.parameters(), lr=args.lr)
+    optimizer_G = RMSprop(G.parameters(), lr=args.lr)
 
     face_dataset = TensorDataset(torch.stack([f[0] for f in face_folder], dim=0).to(device))
     dataloader = DataLoader(face_dataset, batch_size=batch_size, shuffle=True)
