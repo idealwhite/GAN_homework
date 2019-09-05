@@ -25,13 +25,14 @@ def update_discriminator(batch_image, generator, discriminator, optimizer, batch
     loss_img.backward()
     loss_fake = discriminator(batch_fake, fake_image=True)
     loss_fake.backward()
+    grad = discriminator.conv[0].weight.grad.mean().item()
 
     optimizer.step()
 
     for p in discriminator.parameters():
         p.data.clamp_(-0.01, 0.01)
 
-    return loss_img.item() + loss_fake.item()
+    return loss_img.item() + loss_fake.item(), grad
 
 
 def update_generator(generator, discriminator, optimizer, batch_size, dim_noise, device):
@@ -48,11 +49,13 @@ def update_generator(generator, discriminator, optimizer, batch_size, dim_noise,
 
     loss = generator_loss(predicted_fake_label)
     loss.backward()
+    grad = generator.generate[0].weight.grad.mean().item()
+
     discriminator.zero_grad()
 
     optimizer.step()
 
-    return loss.item()
+    return loss.item(), grad
 
 def eval_G(generator, batch_size, dim_noise, device, grid=False):
     generator.eval()
@@ -118,11 +121,11 @@ if __name__ == '__main__':
         loss_epoch_d, loss_epoch_g = 0,0
         for i, batch_image in enumerate(dataloader):
             if i % n_update_d == 0:
-                loss_d = update_discriminator(batch_image[0], G, D, optimizer_D, batch_size, dim_noise, device)
+                loss_d, grad = update_discriminator(batch_image[0], G, D, optimizer_D, batch_size, dim_noise, device)
                 loss_epoch_d += loss_d / n_update_d
 
             if i % n_update_g == 0:
-                loss_g = update_generator(G, D, optimizer_G, batch_size, dim_noise, device)
+                loss_g, grad = update_generator(G, D, optimizer_G, batch_size, dim_noise, device)
                 loss_epoch_g += loss_g / n_update_g
 
         # evaluation
@@ -130,6 +133,9 @@ if __name__ == '__main__':
             # print('Epoch: %d => Loss D: %.5f, G: %.5f' % (epoch, loss_epoch_d, loss_epoch_g))
             writer.add_scalar('loss_D', loss_d, global_step=epoch)
             writer.add_scalar('loss_G', loss_g, global_step=epoch)
+            writer.add_scalar('grad_D_low', grad, global_step=epoch)
+            writer.add_scalar('grad_G_low', grad, global_step=epoch)
+
             generate_img = eval_G(G, batch_size=16, dim_noise=100, device=device, grid=True)
             writer.add_image('fake_image', generate_img, global_step=epoch)
 
