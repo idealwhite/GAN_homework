@@ -87,6 +87,8 @@ if __name__ == '__main__':
                         help="epochs per eval")
     parser.add_argument("--model_name", default='gan', type=str, required=False,
                         help="name of this model")
+    parser.add_argument("--debug", default=True, type=bool, required=False,
+                        help="name of this model")
     parser.add_argument("--lr", default=1e-4, type=float, required=False)
     args = parser.parse_args()
 
@@ -114,8 +116,9 @@ if __name__ == '__main__':
     face_dataset = TensorDataset(torch.stack([f[0] for f in face_folder], dim=0).to(device))
     dataloader = DataLoader(face_dataset, batch_size=batch_size, shuffle=True)
 
-    # from tensorboardX import SummaryWriter
-    # writer = SummaryWriter(logdir='./log/'+args.model_name)
+    if args.debug:
+        from tensorboardX import SummaryWriter
+        writer = SummaryWriter(logdir='./log/'+args.model_name)
 
     for epoch in trange(max_epoch):
         loss_epoch_d, loss_epoch_g = 0,0
