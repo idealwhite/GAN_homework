@@ -23,6 +23,7 @@ class Discriminator(nn.Module):
                                   nn.Conv2d(256, 1, kernel_size=4, stride=1)
                                   )
 
+
     def forward_froze(self, image):
         features = self.conv(image)
         logit = features.view(len(image), -1)

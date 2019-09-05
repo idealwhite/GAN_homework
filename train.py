@@ -4,8 +4,16 @@ from generator import Generator, generator_loss
 from torch.utils.data import DataLoader
 
 import torch
+import torch.nn as nn
 from torch.optim import Adam, RMSprop
 
+def weights_init(m):
+    classname = m.__class__.__name__
+    if classname.find('Conv') != -1:
+        nn.init.normal_(m.weight.data, 0.0, 0.02)
+    elif classname.find('BatchNorm') != -1:
+        nn.init.normal_(m.weight.data, 1.0, 0.02)
+        nn.init.constant_(m.bias.data, 0)
 
 def update_discriminator(batch_image, generator, discriminator, optimizer, batch_size, dim_noise, device):
     discriminator.train()
@@ -86,6 +94,9 @@ if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     D = Discriminator()
     G = Generator()
+
+    D.apply(weights_init)
+    G.apply(weights_init)
 
     D.to(device)
     G.to(device)
