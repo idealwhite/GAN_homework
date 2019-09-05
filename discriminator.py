@@ -21,7 +21,8 @@ class Discriminator(nn.Module):
                                   # nn.InstanceNorm2d(256),
                                   nn.LeakyReLU(),
 
-                                  spectral_norm(nn.Conv2d(256, 1, kernel_size=4, stride=1))
+                                  spectral_norm(nn.Conv2d(256, 1, kernel_size=4, stride=1)),
+                                  nn.Sigmoid()
                                   )
 
 
@@ -37,9 +38,9 @@ class Discriminator(nn.Module):
         return  torch.mean(logit_image - logit_fake)
 
     def forward(self, image, fake_image=False):
-        loss = self.forward_froze(image)
+        logits = self.forward_froze(image)
 
         if fake_image is False:
-            return torch.mean(loss)
+            return nn.BCELoss()(logits, torch.ones(len(image)).to(logits.device)) # torch.mean(logits)
         else:
-            return -torch.mean(loss)
+            return nn.BCELoss()(logits, torch.zeros(len(image)).to(logits.device)) # -torch.mean(logits)

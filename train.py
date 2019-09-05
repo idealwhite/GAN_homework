@@ -1,6 +1,6 @@
 from dataio import *
 from discriminator import Discriminator
-from generator import Generator, generator_loss
+from generator import Generator
 from torch.utils.data import DataLoader
 
 import torch
@@ -46,17 +46,16 @@ def update_generator(generator, discriminator, optimizer, batch_size, dim_noise,
     batch_noise = get_noise_batch(batch_size, dim_noise, device)
 
     batch_fake_image = generator(batch_noise)
-    predicted_fake_label = discriminator(batch_fake_image)
+    loss_generate = discriminator(batch_fake_image, fake_image=False)
 
-    loss = generator_loss(predicted_fake_label)
-    loss.backward()
+    loss_generate.backward()
     grad = generator.generate[0].weight.grad.mean().item()
 
     discriminator.zero_grad()
 
     optimizer.step()
 
-    return loss.item(), grad
+    return loss_generate.item(), grad
 
 def eval_G(generator, batch_size, dim_noise, device, grid=False):
     generator.eval()

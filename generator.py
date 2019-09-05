@@ -29,6 +29,3 @@ class Generator(nn.Module):
         noise = noise.view(-1, 100, 1, 1)
         fake_image = self.generate(noise)
         return fake_image
-
-def generator_loss(predicted_fake_label):
-    return torch.mean(predicted_fake_label)
