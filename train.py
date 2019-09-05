@@ -15,7 +15,7 @@ def weights_init(m):
         nn.init.normal_(m.weight.data, 1.0, 0.02)
         nn.init.constant_(m.bias.data, 0)
 
-def update_discriminator(batch_image, generator, discriminator, optimizer, batch_size, dim_noise, device):
+def update_discriminator(batch_image, generator, discriminator, optimizer, clip, batch_size, dim_noise, device):
     discriminator.train()
 
     batch_fake = get_fake_batch(generator, batch_size, dim_noise, device)
@@ -29,8 +29,9 @@ def update_discriminator(batch_image, generator, discriminator, optimizer, batch
 
     optimizer.step()
 
-    for p in discriminator.parameters():
-        p.data.clamp_(-0.01, 0.01)
+    if clip:
+        for p in discriminator.parameters():
+            p.data.clamp_(-0.01, 0.01)
 
     return loss_img.item() + loss_fake.item(), grad
 
@@ -89,6 +90,8 @@ if __name__ == '__main__':
                         help="name of this model")
     parser.add_argument("--tb", default=False, type=bool, required=False,
                         help="use tensorboard")
+    parser.add_argument("--clip", default=False, type=bool, required=False,
+                        help="apply weight clip in Discriminator")
     parser.add_argument("--lr", default=1e-4, type=float, required=False)
     args = parser.parse_args()
 
@@ -124,7 +127,7 @@ if __name__ == '__main__':
         loss_epoch_d, loss_epoch_g = 0,0
         for i, batch_image in enumerate(dataloader):
             if i % n_update_d == 0:
-                loss_d, grad = update_discriminator(batch_image[0], G, D, optimizer_D, batch_size, dim_noise, device)
+                loss_d, grad = update_discriminator(batch_image[0], G, D, optimizer_D, args.clip, batch_size, dim_noise, device)
                 loss_epoch_d += loss_d / n_update_d
 
             if i % n_update_g == 0:
