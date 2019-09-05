@@ -1,26 +1,27 @@
 import torch
 import torch.nn as nn
+from torch.nn.utils import spectral_norm
 
 class Discriminator(nn.Module):
     def __init__(self):
         super(Discriminator, self).__init__()
 
-        self.conv = nn.Sequential(nn.Conv2d(3, 32, kernel_size=4, stride=2, padding=1),
+        self.conv = nn.Sequential(spectral_norm(nn.Conv2d(3, 32, kernel_size=4, stride=2, padding=1)),
                                   nn.LeakyReLU(),
 
-                                  nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1),
+                                  spectral_norm(nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1)),
                                   nn.InstanceNorm2d(64),
                                   nn.LeakyReLU(),
 
-                                  nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
+                                  spectral_norm(nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1)),
                                   nn.InstanceNorm2d(128),
                                   nn.LeakyReLU(),
 
-                                  nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
+                                  spectral_norm(nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1)),
                                   nn.InstanceNorm2d(256),
                                   nn.LeakyReLU(),
 
-                                  nn.Conv2d(256, 1, kernel_size=4, stride=1)
+                                  spectral_norm(nn.Conv2d(256, 1, kernel_size=4, stride=1))
                                   )
 
 
