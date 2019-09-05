@@ -131,6 +131,7 @@ if __name__ == '__main__':
             writer.add_image('fake_image', generate_img, global_step=epoch)
 
     # test
-    noise = get_noise_batch(9, 100, device)
+    noise = get_noise_batch(25, 100, device)
     output_images = G(noise)
-    save_image(output_images, './output/imgs.png')
+    save_image(output_images, nrow=5, filename='./output/imgs.png')
+    torch.save(G, './output/'+args.model_name+'.MODEL')
