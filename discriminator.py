@@ -41,6 +41,6 @@ class Discriminator(nn.Module):
         logits = self.forward_froze(image)
 
         if fake_image is False:
-            return nn.BCELoss()(logits, torch.ones(len(image)).to(logits.device)) # torch.mean(logits)
+            return nn.BCELoss()(logits, torch.ones(len(image), 1).to(logits.device)) # torch.mean(logits)
         else:
-            return nn.BCELoss()(logits, torch.zeros(len(image)).to(logits.device)) # -torch.mean(logits)
+            return nn.BCELoss()(logits, torch.zeros(len(image), 1).to(logits.device)) # -torch.mean(logits)

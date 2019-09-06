@@ -49,7 +49,7 @@ def update_generator(generator, discriminator, optimizer, batch_size, dim_noise,
     loss_generate = discriminator(batch_fake_image, fake_image=False)
 
     loss_generate.backward()
-    grad = generator.generate[0].weight.grad.mean().item()
+    grad = generator.generate[0].weight_orig.grad.mean().item()
 
     discriminator.zero_grad()
 
@@ -126,11 +126,11 @@ if __name__ == '__main__':
         loss_epoch_d, loss_epoch_g = 0,0
         for i, batch_image in enumerate(dataloader):
             if i % n_update_d == 0:
-                loss_d, grad = update_discriminator(batch_image[0], G, D, optimizer_D, args.clip, batch_size, dim_noise, device)
+                loss_d, grad_d = update_discriminator(batch_image[0], G, D, optimizer_D, args.clip, batch_size, dim_noise, device)
                 loss_epoch_d += loss_d / n_update_d
 
             if i % n_update_g == 0:
-                loss_g, grad = update_generator(G, D, optimizer_G, batch_size, dim_noise, device)
+                loss_g, grad_g = update_generator(G, D, optimizer_G, batch_size, dim_noise, device)
                 loss_epoch_g += loss_g / n_update_g
 
         # evaluation
@@ -138,8 +138,8 @@ if __name__ == '__main__':
             # print('Epoch: %d => Loss D: %.5f, G: %.5f' % (epoch, loss_epoch_d, loss_epoch_g))
             writer.add_scalar('loss_D', loss_d, global_step=epoch)
             writer.add_scalar('loss_G', loss_g, global_step=epoch)
-            writer.add_scalar('grad_D_low', grad, global_step=epoch)
-            writer.add_scalar('grad_G_low', grad, global_step=epoch)
+            writer.add_scalar('grad_D_low', grad_d, global_step=epoch)
+            writer.add_scalar('grad_G_low', grad_g, global_step=epoch)
 
             generate_img = eval_G(G, batch_size=16, dim_noise=100, device=device, grid=True)
             writer.add_image('fake_image', generate_img, global_step=epoch)
