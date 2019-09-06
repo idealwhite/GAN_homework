@@ -1,6 +1,5 @@
 from dataio import *
-from discriminator import Discriminator
-from generator import Generator
+from models import Discriminator, Generator
 from torch.utils.data import DataLoader
 
 import torch
@@ -134,7 +133,7 @@ if __name__ == '__main__':
                 loss_epoch_g += loss_g / n_update_g
 
         # evaluation
-        if epoch % n_eval_epoch == 0:
+        if epoch % n_eval_epoch and args.tb:
             # print('Epoch: %d => Loss D: %.5f, G: %.5f' % (epoch, loss_epoch_d, loss_epoch_g))
             writer.add_scalar('loss_D', loss_d, global_step=epoch)
             writer.add_scalar('loss_G', loss_g, global_step=epoch)
