@@ -40,9 +40,9 @@ class Self_Attn(nn.Module):
 
 
 class Discriminator(nn.Module):
-    def __init__(self):
+    def __init__(self, loss):
         super(Discriminator, self).__init__()
-
+        self.loss = loss
         self.conv = nn.Sequential(spectral_norm(nn.Conv2d(3, 32, kernel_size=4, stride=2, padding=1)),
                                   nn.LeakyReLU(),
 
@@ -61,29 +61,32 @@ class Discriminator(nn.Module):
 
                                   Self_Attn(256),
                                   spectral_norm(nn.Conv2d(256, 1, kernel_size=4, stride=1)),
-                                  nn.Sigmoid()
                                   )
 
 
-    def forward_froze(self, image):
+    def forward_logit(self, image):
         features = self.conv(image)
         logit = features.view(len(image), -1)
-        return logit
-
-    def forward_update(self, batch_image, batch_fake):
-        logit_image = self.forward_froze(batch_image)
-        logit_fake = self.forward_froze(batch_fake)
-
-        return  torch.mean(logit_image - logit_fake)
+        return logit.squeeze()
 
     def forward(self, image, fake_image=False):
-        logits = self.forward_froze(image)
+        logits = self.forward_logit(image)
 
         if fake_image is False:
-            return nn.BCELoss()(logits, torch.ones(len(image), 1).to(logits.device)) # torch.mean(logits)
+            if self.loss.lower() == 'bce':
+                loss = nn.BCELoss()(nn.Sigmoid()(logits), torch.ones(len(image)).to(logits.device))
+            elif self.loss.lower() == 'wgan':
+                loss = torch.mean(logits)
+            elif self.loss.lower() == 'hinge':
+                loss = torch.mean(nn.ReLU()(1.0 - logits))
         else:
-            return nn.BCELoss()(logits, torch.zeros(len(image), 1).to(logits.device)) # -torch.mean(logits)
-
+            if self.loss.lower() == 'bce':
+                loss = nn.BCELoss()(nn.Sigmoid()(logits), torch.zeros(len(image)).to(logits.device))
+            elif self.loss.lower() == 'wgan':
+                loss = -torch.mean(logits)
+            elif self.loss.lower() == 'hinge':
+                loss = torch.mean(nn.ReLU()(1.0 + logits))
+        return loss
 
 class Generator(nn.Module):
     def __init__(self):

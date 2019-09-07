@@ -84,6 +84,8 @@ if __name__ == '__main__':
     parser.add_argument("--dim_noise", default=100, type=int, required=False)
     parser.add_argument("--n_eval_epoch", default=100, type=int, required=False,
                         help="epochs per eval")
+    parser.add_argument("--loss", default='BCE', type=str, required=False,
+                        help="loss function. Now support BCE/WGAN/hinge")
     parser.add_argument("--model_name", default='gan', type=str, required=False,
                         help="name of this model")
     parser.add_argument("--tb", default=False, type=bool, required=False,
@@ -101,7 +103,7 @@ if __name__ == '__main__':
     n_eval_epoch = args.n_eval_epoch
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    D = Discriminator()
+    D = Discriminator(args.loss)
     G = Generator()
 
     D.apply(weights_init)
