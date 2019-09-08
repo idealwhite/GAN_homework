@@ -79,6 +79,8 @@ class Discriminator(nn.Module):
                 loss = torch.mean(logits)
             elif self.loss.lower() == 'hinge':
                 loss = torch.mean(nn.ReLU()(1.0 - logits))
+            elif self.loss.lower() == 'soft_hinge':
+                loss = torch.mean(nn.Softplus()(1.0 - logits))
         else:
             if self.loss.lower() == 'bce':
                 loss = nn.BCELoss()(nn.Sigmoid()(logits), torch.zeros(len(image)).to(logits.device))
@@ -86,6 +88,8 @@ class Discriminator(nn.Module):
                 loss = -torch.mean(logits)
             elif self.loss.lower() == 'hinge':
                 loss = torch.mean(nn.ReLU()(1.0 + logits))
+            elif self.loss.lower() == 'soft_hinge':
+                loss = torch.mean(nn.Softplus()(1.0 + logits))
         return loss
 
 class Generator(nn.Module):
