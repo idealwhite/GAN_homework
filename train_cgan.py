@@ -1,20 +1,31 @@
 from dataio import *
-from models import Discriminator, Generator
+from models import ConditionalDiscriminator, ConditionalGenerator
 from torch.utils.data import DataLoader
 
 import torch
 from torch.optim import RMSprop
 
-
-def update_discriminator(batch_image, generator, discriminator, optimizer, clip, batch_size, dim_noise, device):
+def update_discriminator(batch_image, batch_condition, batch_error_image, batch_err_condition, generator, discriminator, optimizer, clip, dim_noise, device):
     discriminator.train()
+    batch_size = len(batch_image)
 
-    batch_fake = get_fake_batch(generator, batch_size, dim_noise, device)
+    batch_fake = get_fake_batch_conditional(generator, batch_condition, batch_size, dim_noise, device)
 
     discriminator.zero_grad()
-    loss_img = discriminator(batch_image, fake_image=False)
+    # True image, true condition
+    loss_img = discriminator(batch_image, batch_condition, fake_image=False)
     loss_img.backward()
-    loss_fake = discriminator(batch_fake, fake_image=True)
+
+    # Error image, true condition
+    loss_error_img = discriminator(batch_error_image, batch_condition, fake_image=True) * 0.3
+    loss_error_img.backward()
+
+    # True image, Error condition
+    loss_error_img = discriminator(batch_image, batch_err_condition, fake_image=True) * 0.3
+    loss_error_img.backward()
+
+    # Error image, error condition
+    loss_fake = discriminator(batch_fake, batch_condition, fake_image=True) * 0.4
     loss_fake.backward()
     grad = discriminator.conv[0].weight_orig.grad.mean().item()
 
@@ -27,7 +38,7 @@ def update_discriminator(batch_image, generator, discriminator, optimizer, clip,
     return loss_img.item() + loss_fake.item(), grad
 
 
-def update_generator(generator, discriminator, optimizer, batch_size, dim_noise, device):
+def update_generator(generator, discriminator, batch_condition, optimizer, batch_size, dim_noise, device):
     discriminator.eval()
     generator.train()
 
@@ -36,11 +47,11 @@ def update_generator(generator, discriminator, optimizer, batch_size, dim_noise,
 
     batch_noise = get_noise_batch(batch_size, dim_noise, device)
 
-    batch_fake_image = generator(batch_noise)
-    loss_generate = discriminator(batch_fake_image, fake_image=False)
+    batch_fake_image = generator(batch_noise, batch_condition)
+    loss_generate = discriminator(batch_fake_image, batch_condition, fake_image=False)
 
     loss_generate.backward()
-    grad = generator.generate[0].weight_orig.grad.mean().item()
+    grad = generator.generate[0].weight.grad.mean().item()
 
     discriminator.zero_grad()
 
@@ -48,14 +59,20 @@ def update_generator(generator, discriminator, optimizer, batch_size, dim_noise,
 
     return loss_generate.item(), grad
 
-def eval_G(generator, batch_size, dim_noise, device, grid=False):
+def eval_G(generator, dim_noise, device, grid=False):
     generator.eval()
     with torch.no_grad():
-        noise = get_noise_batch(batch_size, dim_noise, device)
-        output_images = generator(noise)
+        noise = get_noise_batch(25, dim_noise, device)
+        tags = ['blue hair blue eyes'] * 5 \
+               + ['blue hair green eyes'] * 5 \
+               + ['blue hair red eyes'] * 5 \
+               + ['green hair blue eyes'] * 5 \
+                + ['green hair red eyes'] * 5
+        batch_condition = tags2vec_batch(tags, device)
+        output_images = generator(noise, batch_condition)
 
     if grid == True:
-        output_images = make_grid(output_images*0.5+0.5, nrow=4)
+        output_images = make_grid(output_images*0.5+0.5, nrow=5)
     return output_images
 
 if __name__ == '__main__':
@@ -95,8 +112,8 @@ if __name__ == '__main__':
     n_eval_epoch = args.n_eval_epoch
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    D = Discriminator(args.loss)
-    G = Generator()
+    D = ConditionalDiscriminator(args.loss)
+    G = ConditionalGenerator()
 
     D.to(device)
     G.to(device)
@@ -105,7 +122,7 @@ if __name__ == '__main__':
     optimizer_D = RMSprop(D.parameters(), lr=args.lr)
     optimizer_G = RMSprop(G.parameters(), lr=args.lr)
 
-    face_dataset = FolderDataset(device, face_folder, conditions=False)
+    face_dataset = get_condition_image_dataset(device)
     dataloader = DataLoader(face_dataset, batch_size=batch_size, shuffle=True)
 
     if args.tb:
@@ -114,13 +131,16 @@ if __name__ == '__main__':
 
     for epoch in trange(max_epoch):
         loss_epoch_d, loss_epoch_g = 0,0
-        for i, batch_image in enumerate(dataloader):
+        for i, batch in enumerate(dataloader):
+            batch_image, batch_condition, batch_error_image, batch_err_condition = batch
+
             if i % n_update_d == 0:
-                loss_d, grad_d = update_discriminator(batch_image[0], G, D, optimizer_D, args.clip, batch_size, dim_noise, device)
+                loss_d, grad_d = update_discriminator(batch_image, batch_condition, batch_error_image, batch_err_condition,\
+                                                      G, D, optimizer_D, args.clip, dim_noise, device)
                 loss_epoch_d += loss_d / n_update_d
 
             if i % n_update_g == 0:
-                loss_g, grad_g = update_generator(G, D, optimizer_G, batch_size, dim_noise, device)
+                loss_g, grad_g = update_generator(G, D, batch_condition, optimizer_G, batch_size, dim_noise, device)
                 loss_epoch_g += loss_g / n_update_g
 
         # evaluation
@@ -131,7 +151,7 @@ if __name__ == '__main__':
             writer.add_scalar('grad_D_low', grad_d, global_step=epoch)
             writer.add_scalar('grad_G_low', grad_g, global_step=epoch)
 
-            generate_img = eval_G(G, batch_size=16, dim_noise=100, device=device, grid=True)
+            generate_img = eval_G(G, dim_noise=100, device=device, grid=True)
             writer.add_image('fake_image', generate_img, global_step=epoch)
 
     # test
